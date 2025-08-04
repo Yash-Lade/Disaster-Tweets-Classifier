@@ -15,7 +15,7 @@ tfidf = joblib.load('tfidf_vectorizer.pkl')
 bow = joblib.load('bow_vectorizer.pkl')
 
 # Twitter API credentials
-bearer_token = 'AAAAAAAAAAAAAAAAAAAAAO9puQEAAAAAibBDDQEa%2BOYP%2BI%2BkQNdGzbfgOQQ%3DSryMUwRRPymuUcj0pA44K7TkHdRKXPE8LQrBeXkrQsIKgUHWDd'
+bearer_token = 'AAAAAAAAAAAAAAAAAAAAAO9puQEAAAAAibBDDQEa%2BOYP%2BI%2BkQNdGzbfgOQQ%3DSryMUwRRPymuUcj0pA44K7TkHdRKXPE8LQrBeXkrQsIKgUHWDd'  # Replace with your Bearer Token
 
 # Initialize tweepy client
 client = tweepy.Client(bearer_token=bearer_token)
@@ -43,17 +43,8 @@ def fetch_recent_tweets(query, time_range):
     end_time_str = end_time.isoformat().replace("+00:00", "Z")
 
     try:
-        tweets = client.search_recent_tweets(query=query, start_time=start_time_str, end_time=end_time_str, max_results=10, tweet_fields=["created_at", "text", "geo"], expansions="author_id", user_fields=["location"])
-        if not tweets.data:
-            return []
-        
-        # Create a dictionary to map user IDs to their locations
-        user_dict = {u["id"]: u["location"] for u in tweets.includes["users"]}
-        
-        # Create a list of tweets with user location information
-        tweets_with_location = [{"text": t["text"], "created_at": t["created_at"], "user_location": user_dict.get(t["author_id"], "Unknown location")} for t in tweets.data]
-        
-        return tweets_with_location
+        tweets = client.search_recent_tweets(query=query, start_time=start_time_str, end_time=end_time_str, max_results=10, tweet_fields=["created_at", "text", "geo"])
+        return tweets.data if tweets.data else []
     except Exception as e:
         st.error(f"Error fetching tweets: {e}")
         return []
@@ -77,7 +68,7 @@ page_bg="""
         }
     </style>
 """
-# Custom CSS 
+# Custom CSS for dark theme and styling
 st.markdown(
     """
     <style>
@@ -86,40 +77,39 @@ st.markdown(
         color: white;
     }
     .title {
-        font-family: Cambria, Cochin, Georgia;
+        font-family: 'Helvetica', sans-serif;
         color: rgb(0, 227, 235);
         text-align: center;
-        padding-bottom:20px;
-        text-shadow: 2px 2px 4px rgb(0, 227, 235);
-        font-size: 2.5rem;
-        font-weight:bolder;
+        padding: 20px;
+        font-size: 35px;
+        font-weight:bolder
     }
     .header {
-        font-family: Cambria, Cochin, Georgia;
-        color: rgb(255, 251, 28);
-        font-size: 25px;
+        font-family: 'Helvetica', sans-serif;
+        color: #000000;
+        padding: 10px;
+        font-size: 24px;
         text-align: center;
-        test-shadow: 2px 2px 4px rgb(255, 251, 28);
     }
     .header1{
-        font-family: Cambria, Cochin, Georgia;
-        color: rgb(255, 251, 28);
+        font-family: 'Helvetica', sans-serif;
+        color: #f9ff3d;
         font-weight:bolder;
     }
     .subheader {
-        font-family: Cambria, Cochin, Georgia;
+        font-family: 'Helvetica', sans-serif;
         color: #f7ab33;
         padding: 10px;
         font-size: 20px;
     }
     .result {
-        font-family: Cambria, Cochin, Georgia;
+        font-family: 'Helvetica', sans-serif;
         text-align: center;
-        padding: 0px;
+        padding: 10px;
         font-size: 20px;
     }
     .disaster {
-        color: rgb(255, 68, 0);
+        color: red;
     }
     .not-disaster {
         color: #00ff15;
@@ -177,8 +167,6 @@ st.markdown(
     .blur-bg-hdr{
         backdrop-filter: blur(10px);
         font-weight:bolder;
-        background:rgba(0, 0, 0, 0.3);
-        border-radius:7px;
     }
     .slctbx{
         font-size:15px
@@ -213,7 +201,7 @@ if st.button("Fetch and Classify"):
             result_color = "disaster" if result == "Disaster" else "not-disaster"
             st.markdown(f"<div class='blurred-background'><div class='result {result_color}'>Prediction: {result}</div></div>", unsafe_allow_html=True)
     else:
-        st.markdown("<div class='result blur-bg-hdr'>Please enter a tweet.</div>", unsafe_allow_html=True)
+        st.markdown("<div class='result'>Please enter a tweet.</div>", unsafe_allow_html=True)
 
 # Fetch recent tweets
 st.markdown("<div class='header blur-bg-hdr'>Fetch Recent Disaster Related Tweets</div>", unsafe_allow_html=True)
@@ -223,9 +211,9 @@ if st.button("Fetch Disaster Related Tweets"):
     query = "disaster"  # Example query, you can customize it
     tweets = fetch_recent_tweets(query, time_range)
     for tweet in tweets:
-        tweet_text = tweet["text"]
-        created_at = tweet["created_at"]
-        user_location = tweet["user_location"]
+        tweet_text = tweet.text
+        created_at = tweet.created_at
+        user_location = tweet.geo if tweet.geo else "Unknown location"
         result = predict_single_tweet(tweet_text)
         result_color = "disaster" if result == "Disaster" else "not-disaster"
         st.markdown(f"<div class='result {result_color} blurred-background'>Tweet: {tweet_text} \n\n Created At: {created_at} \n\n User Location: {user_location}</div>", unsafe_allow_html=True)
