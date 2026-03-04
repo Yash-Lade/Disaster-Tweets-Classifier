@@ -1,4 +1,4 @@
-# Disaster Tweets Classifier 🚨🧠
+# Disaster Tweets Classifier 
 
 This repository contains a machine learning project that classifies whether a tweet is about a real disaster or not. It uses natural language processing (NLP) techniques and a trained ML model to make predictions.
 
@@ -8,7 +8,7 @@ To build a classifier that can accurately identify disaster-related tweets, help
 
 ## 🔍 Dataset
 
-- **Source**: [Kaggle - Real or Not? NLP with Disaster Tweets](https://www.kaggle.com/competitions/nlp-getting-started/data)
+- **Source**: [Kaggle - NLP with Disaster Tweets](https://www.kaggle.com/competitions/nlp-getting-started/data)
 - **Fields**:
   - `id`: unique identifier for each tweet
   - `text`: the content of the tweet
